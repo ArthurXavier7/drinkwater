@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DrinkWater</title>
+<meta name="description" content="Lembrar. Registrar. Acompanhar.">
+<meta name="theme-color" content="#1e88e5">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Primeiro acesso -->
+<div id="onboarding" class="onboarding" role="dialog" aria-modal="true" aria-labelledby="ob-title" hidden>
+  <div class="ob-card">
+    <section data-step="0">
+      <div class="ob-emoji" aria-hidden="true">💧</div>
+      <h1 id="ob-title">Bem-vindo ao DrinkWater 💧</h1>
+      <p>Organize seus registros e acompanhe seu hábito de beber água ao longo do dia.</p>
+    </section>
+    <section data-step="1" hidden>
+      <h2>Como podemos chamar você?</h2>
+      <label for="ob-name">Seu nome</label>
+      <input id="ob-name" type="text" maxlength="30" autocomplete="given-name">
+    </section>
+    <section data-step="2" hidden>
+      <h2>Defina sua meta diária pessoal</h2>
+      <p>Defina uma meta pessoal para acompanhar seu consumo diário. O valor abaixo é só um exemplo e você pode alterá-lo quando quiser.</p>
+      <label for="ob-goal">Quantidade em ml</label>
+      <input id="ob-goal" type="number" inputmode="numeric" min="500" max="10000" step="50" value="2000">
+    </section>
+    <section data-step="3" hidden>
+      <h2>Deseja receber lembretes?</h2>
+      <p>Quer receber lembretes para não esquecer de registrar sua água?</p>
+      <div class="row">
+        <button class="btn" data-remind="yes">Sim</button>
+        <button class="btn ghost" data-remind="no">Não</button>
+      </div>
+      <p id="ob-remind-msg" class="hint" role="status"></p>
+    </section>
+    <section data-step="4" hidden>
+      <div class="ob-emoji" aria-hidden="true">✅</div>
+      <h2>Tudo pronto!</h2>
+      <p>Seu DrinkWater está configurado.</p>
+    </section>
+    <div class="row ob-actions">
+      <button id="ob-back" class="btn ghost" hidden>Voltar</button>
+      <button id="ob-next" class="btn">Continuar</button>
+    </div>
+    <p class="hint small">O DrinkWater é uma ferramenta de organização pessoal e não substitui orientação de profissionais de saúde.</p>
+  </div>
+</div>
+
+<div class="app">
+  <nav class="nav" aria-label="Navegação principal">
+    <div class="brand"><img src="icons/icon.svg" alt="" width="32" height="32"><span>DrinkWater</span></div>
+    <button data-view="home" aria-current="page"><span aria-hidden="true">🏠</span><b>Início</b></button>
+    <button data-view="register"><span aria-hidden="true">💧</span><b>Registrar</b></button>
+    <button data-view="history"><span aria-hidden="true">📊</span><b>Histórico</b></button>
+    <button data-view="settings"><span aria-hidden="true">⚙️</span><b>Ajustes</b></button>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <!-- Início -->
+    <section id="view-home" class="view">
+      <header class="top">
+        <h1>DrinkWater</h1>
+        <p id="greeting" class="sub">Cuide da sua hidratação ao longo do dia.</p>
+      </header>
+      <div class="card hero">
+        <div class="ring" role="img" id="ring-label">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+            <circle id="ring-fg" class="ring-fg" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="ring-text"><strong id="pct">0%</strong><span id="amounts">0 ml / 2.000 ml</span></div>
+        </div>
+        <p id="motivation" class="motivation" role="status">Cada registro ajuda você a acompanhar melhor seu dia.</p>
+        <p class="hint">Meta pessoal definida pelo usuário.</p>
+        <div class="row center">
+          <button class="btn" data-goto="register">+ Registrar água</button>
+          <button id="undo-home" class="btn ghost">Desfazer último</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Registros de hoje</h2>
+        <div id="today-list"></div>
+      </div>
+    </section>
+
+    <!-- Registrar -->
+    <section id="view-register" class="view" hidden>
+      <header class="top"><h1>Registrar água</h1><p class="sub">Toque para adicionar ao seu dia.</p></header>
+      <div class="card">
+        <div class="quick">
+          <button class="btn big" data-add="200"><span class="drop" aria-hidden="true">💧</span>+ 200 ml</button>
+          <button class="btn big" data-add="300"><span class="drop" aria-hidden="true">💧</span>+ 300 ml</button>
+          <button class="btn big" data-add="500"><span class="drop" aria-hidden="true">💧</span>+ 500 ml</button>
+        </div>
+        <h2>Adicionar quantidade personalizada</h2>
+        <div class="row">
+          <div class="grow">
+            <label for="custom-amount">Quantidade em ml</label>
+            <input id="custom-amount" type="number" inputmode="numeric" min="1" max="5000" placeholder="Ex.: 350">
+          </div>
+          <button id="add-custom" class="btn">Adicionar</button>
+        </div>
+        <p id="custom-error" class="error" role="alert"></p>
+        <button id="undo-reg" class="btn ghost">Desfazer último registro</button>
+      </div>
+      <p class="hint">Hoje: <strong id="reg-total">0 ml</strong></p>
+    </section>
+
+    <!-- Histórico -->
+    <section id="view-history" class="view" hidden>
+      <header class="top"><h1>Histórico</h1><p class="sub">Seus registros, apenas como acompanhamento.</p></header>
+      <div class="card">
+        <h2>Últimos 7 dias</h2>
+        <div id="chart" class="chart" role="img" aria-label="Gráfico de barras dos últimos 7 dias"></div>
+        <p class="hint small">A linha tracejada indica sua meta pessoal.</p>
+      </div>
+      <div class="card">
+        <h2>Estatísticas</h2>
+        <div id="stats" class="stats"></div>
+      </div>
+      <div class="card">
+        <h2>Registros por data</h2>
+        <label for="date-pick">Escolha uma data</label>
+        <input id="date-pick" type="date">
+        <div id="day-detail"></div>
+      </div>
+      <div class="card">
+        <h2>Dias anteriores</h2>
+        <div id="days-list"></div>
+      </div>
+    </section>
+
+    <!-- Configurações -->
+    <section id="view-settings" class="view" hidden>
+      <header class="top"><h1>Configurações</h1></header>
+      <div class="card">
+        <h2>Perfil</h2>
+        <label for="set-name">Nome ou apelido</label>
+        <input id="set-name" type="text" maxlength="30">
+        <label for="set-goal">Meta diária (ml)</label>
+        <input id="set-goal" type="number" inputmode="numeric" min="500" max="10000" step="50">
+        <p class="hint">Meta pessoal definida pelo usuário. A necessidade de hidratação pode variar de pessoa para pessoa.</p>
+      </div>
+      <div class="card">
+        <h2>Lembretes de hidratação</h2>
+        <label class="switch"><input id="set-remind" type="checkbox" role="switch"><span>Ativar lembretes</span></label>
+        <div class="grid3">
+          <div><label for="set-start">Início</label><input id="set-start" type="time"></div>
+          <div><label for="set-end">Fim</label><input id="set-end" type="time"></div>
+          <div><label for="set-interval">Intervalo (min)</label><input id="set-interval" type="number" inputmode="numeric" min="15" max="480" step="5"></div>
+        </div>
+        <p id="notif-status" class="hint" role="status"></p>
+        <button id="test-notif" class="btn ghost">Enviar lembrete de teste</button>
+      </div>
+      <div class="card">
+        <h2>Aparência</h2>
+        <div class="row">
+          <button class="btn ghost" data-theme="light">☀️ Tema claro</button>
+          <button class="btn ghost" data-theme="dark">🌙 Tema escuro</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Dados</h2>
+        <p class="hint">Seus registros são armazenados localmente neste dispositivo.</p>
+        <div class="row">
+          <button id="export-csv" class="btn ghost">Exportar CSV</button>
+          <button id="export-json" class="btn ghost">Exportar JSON</button>
+          <button id="wipe" class="btn danger">Apagar todos os dados</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Aplicativo</h2>
+        <button id="install" class="btn" hidden>Instalar aplicativo</button>
+        <p id="install-info" class="hint"></p>
+        <p class="hint">DrinkWater é um Progressive Web App (PWA): funciona no navegador, pode ser instalado e abre mesmo sem internet. É uma ferramenta de organização pessoal, não médica.</p>
+        <p class="hint">Lembrar. Registrar. Acompanhar.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<dialog id="confirm" aria-labelledby="confirm-msg">
+  <p id="confirm-msg"></p>
+  <div class="row">
+    <button id="confirm-no" class="btn ghost">Cancelar</button>
+    <button id="confirm-yes" class="btn danger">Confirmar</button>
+  </div>
+</dialog>
+
+<script src="js/app.js"></script>
+</body>
+</html>
